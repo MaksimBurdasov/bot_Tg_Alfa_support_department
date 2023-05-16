@@ -1,0 +1,180 @@
+Задача в Jira: httpsjira.moscow.alfaintra.netbrowseOSSKTB-1544
+
+
+== РАБОЧИЕ ССЫЛКИ ==
+1. Репозиторий проекта на BitBucket: https://git.moscow.alfaintra.net/projects/OSSKTB/repos/rc-telegram-bot/browse
+2. Репозиторий с настройками для бота: https://git.moscow.alfaintra.net/projects/OSSKTB/repos/ossktb-rcsite-settings/browse/src/main/resources/configs/ossktb-tgbot-python
+3. Пайплайн Jenkins для развёртки новых настроек Spring-сервера: http://ossktbapp1:8080/job/build-ossktb-rcsite-settings/
+4. Пайплайн Jenkins сборки джоба (бота): http://ossktbapp1:8080/job/lux-rc-telegram-bot/
+5. Конфигурация настроек на Marathon: http://ossktbapprhel2/marathon/ui/#/apps/%2Fossktb-rcsite%2Fmiddle%2Fsettings/configuration
+6. Падающие сервисы: http://confluence.moscow.alfaintra.net/pages/viewpage.action?pageId=988718604
+7. Севисы в Marathon: http://usrv-mesosm1/marathon/ui/#/apps
+8. Marathon REST API: http://mesosphere.github.io/marathon/api-console/index.html
+9. Сетевые доступы: http://confluence.moscow.alfaintra.net/pages/viewpage.action?pageId=77577332
+
+
+
+== СУТЬ ==
+В чате происходят события (пользователи пишут команды, например).
+Информация об этих событиях сохраняется на сервере Telegram.
+В заданные моменты времени бот запускается. То есть он не работает постоянно.
+Через прокси-сервер выполняется HTTPS запрос с метдом getUpdates к Telegram.
+    прокси: https_proxy=http://OSSKTBAdmin:OSSKTBPass1234@bclocal.moscow.alfaintra.net:8080
+        url: http://OSSKTBAdmin:OSSKTBPass1234@bclocal.moscow.alfaintra.net:8080
+        un: OSSKTBAdmin
+        pw: OSSKTBPass1234
+        ip: bclocal.moscow.alfaintra.net (or 172.28.52.173)
+        port: 8080
+Так бот получает информацию о необработанных событиях.
+Далее по порядку все новые события обрабатываются по заданной логике.
+
+
+== ПОЛЕЗНОЕ ==
+-- Основная инфа по созданию Telegram-ботов
+    Подробный гайд о том, как работать с ботами: https://habr.com/ru/post/543676/#apis
+-- Telegram REST API
+    link: https://telegram.rest/docs/#/Getting%20Updates/post_getUpdates
+-- Что такое прокси-сервер
+    видео: https://youtu.be/oeOuaqyYzSY
+-- aiogram
+    Для реализации проекта решил использовать библиотеку aiogram: https://aiogram.dev/
+    aiogram на pypi: https://pypi.org/project/aiogram/
+    aiogram docs: https://aiogram-russian.readthedocs.io/ru/stable/
+-- Инфа от Полины по поводу получения конфига (чтобы через прокси подлючаться)
+    https://git.moscow.alfaintra.net/projects/OSSKTB/repos/ossktb-rcsite-settings/browse
+-- A Python client for Spring Config Server (настройка конфигурации)
+    pypi: https://pypi.org/project/spring-config-client/
+-- Про вэбхуки, сертификаты и пр.
+    статья: https://habr.com/ru/company/ods/blog/462141/
+-- Настройки приватности для бота в чатах
+    статья: https://core.telegram.org/bots/features#bot-management
+-- SQLAlchemy 1.4 create_engine: https://docs.sqlalchemy.org/en/14/dialects/mssql.html#module-sqlalchemy.dialects.mssql.pyodbc
+
+    ----------
+    ssh u_m1h1q@ossktbapprhel1
+
+    Sudo -s
+
+    cd ossktb-rcsite-settings
+
+    1. docker ps
+    docker rm -f {name}
+    2. docker images
+    docker rmi -f {id}
+
+    3. sudo chmod +x gradlew
+    4. sudo ./gradlew dockerBuildImage - будет феил
+    5. cd build/docker/
+    6. sudo docker build -t ossktb-rcsite-settings .
+    7. sudo docker run -d --name ossktb-rcsite-settings -e CONTAINER_NAME=ossktb-rcsite-settings -e HOST=ossktbapprhel1 -e PORT=3031 -e PORT0=3031 -e PORTS=3031 -e PORT_8080=3031 -e SERVICE_HOST=${HOST} -e SERVICE_NAME=ossktb-rcsite-settings -e SPRING_APPLICATION_NAME=ossktb-rcsite-settings -e SPRING_BOOT_ADMIN_CLIENT_SERVICE_BASE_URL=http://${HOST}/ossktb-rcsite-settings -e SPRING_BOOT_ADMIN_CLIENT_URL=http://${HOST}/ossktb-rcsite-settings/admin -e SPRING_BOOT_ADMIN_URL=http://${HOST}/spring-boot-admin -e SPRING_CLOUD_BOOTSTRAP_LOCATION=file:/data/encrypted-config-passwords/ossktb-rcsite/settings.yml -e SPRING_CLOUD_CONSUL_CONFIG_DEFAULT_CONTEXT=commons -e SPRING_CLOUD_CONSUL_CONFIG_PREFIX=config/ossktb-rcsite -e SPRING_CLOUD_CONSUL_CONFIG_PROFILE_SEPARATOR=: -e SPRING_CLOUD_CONSUL_ENABLED=false -e SPRING_CLOUD_CONSUL_HOST=${HOST} -e SPRING_PROFILES_ACTIVE=production -e TZ=Europe/Moscow -v /data/encrypted-config-passwords/ossktb-rcsite:/data/encrypted-config-passwords/ossktb-rcsite:ro --net bridge -p 3031:8080/tcp ossktb-rcsite-settings
+
+    это чтобы настройки добавленные в гит вывести
+    ----------
+-- Типы HTTP запросов
+     статья: https://habr.com/ru/post/50147/
+
+
+== Заготовки ==
+https://api.telegram.org/bot<token>/METHOD_NAME
+    getUpdates: https://api.telegram.org/bot<token>/getUpdates?offset=<update_id сообщения, начиная с которого будем брать>
+        https://api.telegram.org/bot5648485570:AAGjM9WjZS3IFySHAsuZrWGtoyLdrtBYvc8/getUpdates?offset=502674271
+
+
+== LOGBOOK ==
+-- Day 1
+1) Создал бота t.me/AlfaRCbot
+    5648485570:AAGjM9WjZS3IFySHAsuZrWGtoyLdrtBYvc8
+2) Нашёл важную тему Переменные окружения для Python проектов
+    статья: https://habr.com/ru/post/472674/
+    подробное видео: https://youtu.be/ZuM38Lkxzuw
+3) Нашёл важную тему Аннотация типов Python
+    статья: https://habr.com/ru/company/lamoda/blog/432656/
+4) Изучил статью про формат yml
+    статья: https://habr.com/ru/company/rambler_and_co/blog/525498/
+
+Сделал:
++ решить, какую версию aiogram использовать (выбрал третью)
++ изучить способы создания переменной окружения
+
+-- Day 2
+Сделал:
++ разобраться с типами http-запросов (методами)
++ выяснить, какой метод используется для выполнения getUpdates
+
+
+-- Day 3
+Сделал:
+    Попробовал подключиться использую функцию get с параметром verify=False (метод requests):
+        requests.get(f'https://api.telegram.org/bot{TOKEN}/getMe', proxies=proxies, verify=False)
+    сработало для библиотеки requests
++ настроить подключение через прокси
++ запусить пробного бота на requests
+
+
+--Day 4
+Сделал:
++ корректную отправку ответов на команды post-запросами
+
+
+
+--Day 5-8
++ настроить корректное подключение к db
++ выбрать, где хранить sql скрипты
++ положить тестовые sql скрипты
++ сделать каманды для выполнения отчетов
++ оптимизация хранения конфигов
+    + определить, что должно лежать в файле конфига
+    + создать ямл файл
+    + выложиь на битбакет
+    ПРОДОЛЖИТЬ С: выяснить у Ильи, как проверить корректность шифрованных значений
+        зашифровать необходимые значения и протестировать подключение к боту
+    + подключить его к проекту, используя spring_config
+    + переработать фукнцию, которая генерирует connection-строку
+    + и проверить работоспособность
++ рефакторинг кода
+    + убрать лишнее
+    + сделать отдельную фукнцию для подключения к бд
+    + разнести функции
++ проверка подключения пользователе
+    + придумать, как проверять
+
+
+--Day 9
++ создать базу на сервере OSSKTBAPP1
++ добавить несколько сервисов для тестирования
+    + (for testing) /ufr-rctariff-services/middle/settings
+    + ufr-rcincomeusrv-tadeal-service
+    + ufr-rcincomeusrv-servicerequest-service
+    + ufr-rcincomeusrv-snapshot-service
+    + ufr-rcincomeusrv-iadeal-service
+    + ufr-rcincomeusrv-client-service
++ протестировать выполнения рестарта методом /v2/apps/{app_id}/restart
++ пробный рестарт settings...
++ подключиться к серверу OSSKTBAPP1, получить список сервисов
++ сделать значение sAlias уникальным ключом (прогуглить, как это сделать)
++ формировать /restart запрос по app_id, полученному из БД
++ добавить команду /rst_APP
++ добавить текст описание команды /rst_APP
++ сделать функцию проверки команд вида /rst_
++ сделать парсер команд вида /rst_
++ реализовать функцию выполнения команд вида /rst_
++ написать функцию выгрузки таблицы RC.dbo.MarathonApps с сервера OSSKTBAPP1 файлом в чат
+
+
+--Day 10
++ исправить проблему со скриптом marathon_apps.sql, который должен подлючаться к OSSKTBAPP1 (добавить в ямл или ещё как-нибудь)
+
+
+Банк задач:
+- создать конфиг с препиской прод и выложить на сервер с настройками
+- подумать, как можно унифицировать фукнцию проверки команд
+- отладка в режиме работы 24/7
+    - запустить, собрать ос
+    - зафиксировать ошибки
+    - исправить
+[+] изучить статью про аннотацию типов
+[+] начать применять аннотацию типов
+
+
+http://usrv-mesosm1/marathon/ui/#/apps/%2Fufr-rctariff-services%2Fmiddle%2Fsettings/configuration
+

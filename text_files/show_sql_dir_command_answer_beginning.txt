@@ -1,0 +1,3 @@
+Свои sql-сюрикэны я храню тут: https://git.moscow.alfaintra.net/projects/OSSKTB/repos/rc-telegram-bot/browse/sql_queries
+
+Сейчас там хранятся файлы:

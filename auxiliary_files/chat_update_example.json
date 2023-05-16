@@ -1,0 +1,113 @@
+{
+  "ok": true,
+  "result": [
+    {
+      "update_id": 502674436,
+      "my_chat_member": {
+        "chat": {
+          "id": -856285804,
+          "title": "ALERT. НДО И ЭКД",
+          "type": "group",
+          "all_members_are_administrators": true
+        },
+        "from": {
+          "id": 381650272,
+          "is_bot": false,
+          "first_name": "Maksim",
+          "last_name": "Burdasov",
+          "username": "Maksim_Burdasov",
+          "language_code": "en"
+        },
+        "date": 1673859012,
+        "old_chat_member": {
+          "user": {
+            "id": 5648485570,
+            "is_bot": true,
+            "first_name": "AlfaRCbot",
+            "username": "AlfaRCbot"
+          },
+          "status": "left"
+        },
+        "new_chat_member": {
+          "user": {
+            "id": 5648485570,
+            "is_bot": true,
+            "first_name": "AlfaRCbot",
+            "username": "AlfaRCbot"
+          },
+          "status": "member"
+        }
+      }
+    },
+    {
+      "update_id": 502674437,
+      "message": {
+        "message_id": 289,
+        "from": {
+          "id": 381650272,
+          "is_bot": false,
+          "first_name": "Maksim",
+          "last_name": "Burdasov",
+          "username": "Maksim_Burdasov",
+          "language_code": "en"
+        },
+        "chat": {
+          "id": -856285804,
+          "title": "ALERT. НДО И ЭКД",
+          "type": "group",
+          "all_members_are_administrators": true
+        },
+        "date": 1673859012,
+        "new_chat_participant": {
+          "id": 5648485570,
+          "is_bot": true,
+          "first_name": "AlfaRCbot",
+          "username": "AlfaRCbot"
+        },
+        "new_chat_member": {
+          "id": 5648485570,
+          "is_bot": true,
+          "first_name": "AlfaRCbot",
+          "username": "AlfaRCbot"
+        },
+        "new_chat_members": [
+          {
+            "id": 5648485570,
+            "is_bot": true,
+            "first_name": "AlfaRCbot",
+            "username": "AlfaRCbot"
+          }
+        ]
+      }
+    },
+    {
+      "update_id": 502674438,
+      "message": {
+        "message_id": 290,
+        "from": {
+          "id": 381650272,
+          "is_bot": false,
+          "first_name": "Maksim",
+          "last_name": "Burdasov",
+          "username": "Maksim_Burdasov",
+          "language_code": "en"
+        },
+        "chat": {
+          "id": -856285804,
+          "title": "ALERT. НДО И ЭКД",
+          "type": "group",
+          "all_members_are_administrators": true
+        },
+        "date": 1673859156,
+        "text": "/help",
+        "entities": [
+          {
+            "offset": 0,
+            "length": 5,
+            "type": "bot_command"
+          }
+        ]
+      }
+    }
+  ]
+}
